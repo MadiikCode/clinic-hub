@@ -126,18 +126,18 @@ class Appointment(models.Model):
         related_name='appointments',
         verbose_name='Клиника'
     )
-    service = models.ForeignKey(
-        'clinic_app.Service',
-        on_delete=models.PROTECT,
-        related_name='appointments',
-        verbose_name='Услуга'
-    )
-    doctor = models.ForeignKey(
-        'doctors_app.Doctor',
-        on_delete=models.PROTECT,
-        related_name='appointments',
-        verbose_name='Врач'
-    )
+    # service = models.ForeignKey(
+    #     'clinic_app.Service',
+    #     on_delete=models.PROTECT,
+    #     related_name='appointments',
+    #     verbose_name='Услуга'
+    # )
+    # doctor = models.ForeignKey(
+    #     'doctors_app.Doctor',
+    #     on_delete=models.PROTECT,
+    #     related_name='appointments',
+    #     verbose_name='Врач'
+    # )
     date = models.DateField(verbose_name='Дата приема')
     time = models.TimeField(verbose_name='Время приема')
     end_time = models.TimeField(verbose_name='Время окончания', blank=True, null=True)

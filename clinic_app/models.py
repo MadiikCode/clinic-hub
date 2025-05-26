@@ -34,3 +34,12 @@ class Schedule(models.Model):
     end_time = models.CharField(max_length=100)
     is_working = models.BooleanField(default=True)
 
+
+class Service(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    duration = models.IntegerField(help_text="Продолжительность в минутах")
+
+    def __str__(self):
+        return self.name
