@@ -1,6 +1,7 @@
 from rest_framework import routers
 
 from . import views
+from users_app.views import UserViewSet
 
 
 router = routers.DefaultRouter()

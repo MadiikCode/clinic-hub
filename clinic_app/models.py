@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Category(models.Model):
     name = models.CharField(max_length=100)
     descriptions = models.TextField()
@@ -18,7 +17,7 @@ class Clinic(models.Model):
     contact = models.CharField(max_length=100)
     email = models.EmailField()
     logo = models.ImageField(upload_to='clinic/')
-    doctors = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='clinics_by_doctors')
+   # doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='clinics_by_category')
     services = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='clinics_by_services')
     schedule = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='clinics_by_schedule')
@@ -40,6 +39,17 @@ class Service(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
     duration = models.IntegerField(help_text="Продолжительность в минутах")
+
+    def __str__(self):
+        return self.name
+
+
+class WeekDay(models.Model):
+    name = models.CharField(max_length=20)
+    order = models.PositiveSmallIntegerField(unique=True)
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return self.name

@@ -5,6 +5,8 @@ from django.utils import timezone
 from datetime import timedelta
 from datetime import datetime
 
+from doctors_app.models import Doctor  # Импортируем модель Doctor
+
 
 
 class UserManager(BaseUserManager):
@@ -126,18 +128,23 @@ class Appointment(models.Model):
         related_name='appointments',
         verbose_name='Клиника'
     )
-    # service = models.ForeignKey(
-    #     'clinic_app.Service',
-    #     on_delete=models.PROTECT,
-    #     related_name='appointments',
-    #     verbose_name='Услуга'
-    # )
+
+    service = models.ForeignKey(
+        'clinic_app.Service',
+        on_delete=models.PROTECT,
+        related_name='appointments',
+        verbose_name='Услуга',
+        null=True,
+        blank=True
+    )
+
     # doctor = models.ForeignKey(
     #     'doctors_app.Doctor',
     #     on_delete=models.PROTECT,
     #     related_name='appointments',
     #     verbose_name='Врач'
     # )
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField(verbose_name='Дата приема')
     time = models.TimeField(verbose_name='Время приема')
     end_time = models.TimeField(verbose_name='Время окончания', blank=True, null=True)
