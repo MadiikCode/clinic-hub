@@ -20,7 +20,7 @@ class ScheduleDoctor(models.Model):
         ordering = ['weekday__order']
 
     def __str__(self):
-        return f"{self.clinic.name} - {self.weekday.name}"
+        return f"{self.doctor.first_name} - {self.weekday.name}"
 
 
 # Специализация
@@ -71,6 +71,14 @@ class Doctor(models.Model):
             models.Index(fields=['updated_at']),
         ]
 
+    def update_rating(self):
+            approved_reviews = self.reviews.filter(moderation_status='approved')
+            if approved_reviews.exists():
+                avg_rating = approved_reviews.aggregate(models.Avg('rating'))['rating__avg']
+                self.rating = round(avg_rating, 1)
+            else:
+                self.rating = 0
+            self.save()
 
 # Запись на прием вынес в users_app service, так как записывается клиент(user)...
 
@@ -131,8 +139,8 @@ class ReviewDoctor(models.Model):
         return f"Отзыв от {self.user.email} для {self.doctor.first_name}"
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         super().save(*args, **kwargs)
-        # Обновляем рейтинг клиники при сохранении отзыва
         if self.moderation_status == 'approved':
-            self.clinic.update_rating()
+            self.doctor.update_rating()
 

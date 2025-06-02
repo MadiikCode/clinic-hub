@@ -10,6 +10,11 @@ from doctors_app.serializers import (
     SpecializationSerializer,
 )
 
+from rest_framework.exceptions import PermissionDenied
+
+
+
+
 class DoctorViewSet(viewsets.ModelViewSet):
 #API для работы с врачами: список, создание, детали, обновление, удаление
     queryset = Doctor.objects.all().select_related('specialization')
@@ -30,15 +35,25 @@ class ScheduleDoctorViewSet(viewsets.ModelViewSet):
     serializer_class = ScheduleDoctorSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+
 class ReviewDoctorViewSet(viewsets.ModelViewSet):
-    #API для работы с отзывами о врач
     queryset = ReviewDoctor.objects.all()
     serializer_class = ReviewDoctorSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
-        #Автоматически привязывает отзыв к текущему пользователю
-        serializer.save(user=self.request.user)
+        user = self.request.user
+        doctor = serializer.validated_data['doctor']
+
+        # Ограничим — можно оставить отзыв только 1 раз
+        if ReviewDoctor.objects.filter(user=user, doctor=doctor).exists():
+            raise PermissionDenied("Вы уже оставили отзыв этому врачу.")
+
+        # Можно добавить: только если была запись к врачу
+        if not user.appointments.filter(doctor=doctor, status='completed').exists():
+            raise PermissionDenied("Вы можете оставить отзыв только после приёма у этого врача.")
+
+        serializer.save(user=user)
 
 class SpecializationViewSet(viewsets.ModelViewSet):
     #API для работы со специализациями врачей

@@ -11,6 +11,9 @@ class SpecializationSerializer(serializers.ModelSerializer):
 
 
 class DoctorSerializer(serializers.ModelSerializer):
+    specialization = SpecializationSerializer(read_only=True)
+    rating = serializers.DecimalField(max_digits=3, decimal_places=1, read_only=True)
+
     class Meta:
         model = Doctor
         fields = '__all__'

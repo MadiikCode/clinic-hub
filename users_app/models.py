@@ -15,8 +15,14 @@ class UserManager(BaseUserManager):
             raise ValueError('Необходимо указать email!')
         if User.objects.filter(email=email).exists():
             raise ValueError('Пользователь с таким email уже существует.')
+
         user = self.model(email=email)
-        user.set_unusable_password()
+
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+
         user.save(using=self._db)
         return user
 
@@ -57,18 +63,46 @@ class UserManager(BaseUserManager):
         return user
 
 
+# class User(AbstractBaseUser, PermissionsMixin):
+#     USER_ROLE = [
+#         ('user', 'USER'),
+#         ('superuser', 'SUPERUSER'),
+#         ('doc', 'DOC'),
+#     ]
+#
+#     email = models.EmailField(unique=True, verbose_name='email')
+#     is_active = models.BooleanField(default=False)
+#     is_staff = models.BooleanField(default=False)
+#     role = models.CharField(max_length=25, choices=USER_ROLE, default='user')
+#
+#
+#     USERNAME_FIELD = 'email'
+#     REQUIRED_FIELDS = []
+#
+#     objects = UserManager()
+#
+#     def __str__(self):
+#         return str(self.email)
+#
+#     class Meta:
+#         indexes = [
+#             models.Index(fields=['email']),
+#         ]
+
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     USER_ROLE = [
-        ('user', 'USER'),
-        ('superuser', 'SUPERUSER'),
-        ('doc', 'DOC'),
+        ('user', 'User'),
+        ('doctor', 'Doctor'),
+        ('clinic_staff', 'Clinic Staff'),
+        ('admin', 'Admin'),
     ]
 
-    email = models.EmailField(unique=True, verbose_name='email')
+    email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    role = models.CharField(max_length=25, choices=USER_ROLE, default='user')
-
+    role = models.CharField(max_length=20, choices=USER_ROLE, default='user')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -76,12 +110,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return str(self.email)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['email']),
-        ]
+        return self.email
 
 
 class SMSVerification(models.Model):

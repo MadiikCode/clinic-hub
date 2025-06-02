@@ -127,3 +127,11 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 }
+#EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'akhunbayevamadina@gmail.com'
+EMAIL_HOST_PASSWORD = 'tafj dgxj hnqe hutp'
+DEFAULT_FROM_EMAIL = 'akhunbayevamadina@gmail.com'
