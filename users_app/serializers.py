@@ -1,39 +1,48 @@
 from rest_framework import serializers
 
-from users_app.models import UserManager ,User, SMSVerification, Appointment
-from users_app.service.user_service import create_user_with_password  # вот он
-
-from django.contrib.auth.password_validation import validate_password
-from users_app.models import User
+from .models import User, SMSVerification
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        error_messages={'required': 'Необходимо указать email.'}
+    )
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'is_active', 'is_staff', 'role']  # Пароль убран
+        fields = [
+            'id',
+            'email',
+            'username',
+            'is_active',
+            'is_staff',
+            'image',
+        ]
+
+    def validate_email_exists(self, value):
+        """
+        Если пользователь уже существует, просто пропускаем проверку.
+        """
+        if User.objects.filter(email=value).exists():
+            return value
+        return value
 
 
 class SMSVerificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = SMSVerification
-        fields = '__all__'
-
-
-class AppointmentSerializer(serializers.ModelSerializer):
-    clinic_name = serializers.CharField(source='clinic.name', read_only=True)
-    doctor_name = serializers.SerializerMethodField()
-    service_name = serializers.CharField(source='service.name', read_only=True)
-
-    class Meta:
-        model = Appointment
         fields = [
-            'id', 'user', 'clinic', 'clinic_name', 'service', 'service_name',
-            'doctor', 'doctor_name', 'date', 'time', 'end_time', 'status', 'notes',
-            'created_at', 'updated_at'
+            'id',
+            'email',
+            'code',
+            'created_at',
+            'is_used',
         ]
-        read_only_fields = ['user', 'end_time', 'created_at', 'updated_at']
 
-    def get_doctor_name(self, obj):
-        return getattr(obj.doctor, 'user', None) and obj.doctor.user.email
-
-
+    def validate(self, attrs):
+        if not attrs.get('email'):
+            raise serializers.ValidationError({'email': 'Необходимо указать email.'})
+        if not attrs.get('code'):
+            raise serializers.ValidationError({'code': 'Необходимо ввести код.'})
+        return attrs

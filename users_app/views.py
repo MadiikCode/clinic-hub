@@ -1,144 +1,90 @@
-from rest_framework import viewsets, status
+from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import User, SMSVerification, Appointment
-from .serializers import (
-    UserSerializer,
-    SMSVerificationSerializer,
-    AppointmentSerializer
-)
-
-from users_app.service.verification import verify_sms_code
-from users_app.service.appointment_service import create_appointment
-
-
-from rest_framework.views import APIView
+from users_app.serializers import SMSVerificationSerializer
+from .models import User, SMSVerification
+from .serializers import UserSerializer
+from rest_framework import viewsets
 from rest_framework import status
-from django.core.exceptions import ValidationError
-from users_app.service.registration import register_user
 
-# from rest_framework import viewsets, status
-# from rest_framework.response import Response
-# from rest_framework.permissions import IsAuthenticated, AllowAny
-# from rest_framework.decorators import action
-# from django.utils import timezone
-#
-# from .models import User, SMSVerification, Appointment
-# from .serializers import (
-#     UserSerializer,
-#     SMSVerificationSerializer,
-#     AppointmentSerializer
-# )
-#
-#
-# from users_app.service.verification import verify_sms_code
-#
-#
-#
-# class UserViewSet(viewsets.ModelViewSet):
-#     queryset = User.objects.all()
-#     permission_classes = [AllowAny]  # Измени на IsAuthenticated, если нужно
-#     serializer_class = UserSerializer
-#
-#     @action(detail=False, methods=['post'])
-#     def verify_code(self, request):
-#         email = request.data.get('email')
-#         code = request.data.get('code')
-#         success, message = verify_sms_code(email, code)
-#         return Response({'detail': message}, status=200 if success else 400)
-#
-#
-#
-# class SMSVerificationViewSet(viewsets.ModelViewSet):
-#     queryset = SMSVerification.objects.all()
-#     serializer_class = SMSVerificationSerializer
-#     permission_classes = [AllowAny]
-#
-#     @action(detail=False, methods=['post'])
-#     def verify_code(self, request):
-#         email = request.data.get('email')
-#         code = request.data.get('code')
-#
-#         try:
-#             verification = SMSVerification.objects.get(email=email, code=code)
-#             if verification.is_code_valid():
-#                 verification.is_used = True
-#                 verification.save()
-#                 return Response({'detail': 'Код подтвержден.'}, status=status.HTTP_200_OK)
-#             return Response({'detail': 'Код истёк или уже использован.'}, status=status.HTTP_400_BAD_REQUEST)
-#         except SMSVerification.DoesNotExist:
-#             return Response({'detail': 'Неверный код или email.'}, status=status.HTTP_404_NOT_FOUND)
-#
-#
-# class AppointmentViewSet(viewsets.ModelViewSet):
-#     queryset = Appointment.objects.all()
-#     serializer_class = AppointmentSerializer
-#     permission_classes = [IsAuthenticated]
-#
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
-#
+from .services.code_limited_service import is_code_limited, set_code_limited
+from .services.validate_code import code_valid
+from .tasks import generate_and_save_and_send_code
 
 
-
-class UserViewSet(viewsets.ModelViewSet):
+class UserApiView(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data.get('email')
+
+        if is_code_limited(email):
+            return Response({'error': 'Превышен лимит кодов.'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        code = generate_and_save_and_send_code.delay(email)
+
+        cache.set(f'sms_limit_{email}', code, timeout=300)
+        print(f"Setting cache: key=sms_limit_{email}, value={code}, timeout=300")
+        set_code_limited(email)  # Устанавливаем лимит отправки SMS
+
+        return Response({'message': 'Код отправлен.'}, status=status.HTTP_201_CREATED)
 
 
-class RegisterUserView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        email = request.data.get("email")
-        role = request.data.get("role", "user")
-
-        try:
-            user = register_user(email=email, role=role)
-            return Response(
-                {"detail": "Пароль отправлен на email. Используйте его для входа."},
-                status=status.HTTP_201_CREATED
-            )
-        except ValidationError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class SMSVerificationViewSet(viewsets.ModelViewSet):
+class SMSVerificationApiView(viewsets.ModelViewSet):
     queryset = SMSVerification.objects.all()
     serializer_class = SMSVerificationSerializer
-    permission_classes = [AllowAny]
 
-    @action(detail=False, methods=['post'])
-    def verify_code(self, request):
-        email = request.data.get('email')
-        code = request.data.get('code')
-        success, message = verify_sms_code(email, code)
-        return Response({'detail': message}, status=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        serializer = SMSVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
+        email = serializer.validated_data.get('email')
+        code = serializer.validated_data.get('code')
 
-class AppointmentViewSet(viewsets.ModelViewSet):
-    queryset = Appointment.objects.all()
-    serializer_class = AppointmentSerializer
-    permission_classes = [IsAuthenticated]
+        if not email:
+            return Response({'error': 'email обязателен.'}, status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        # Если нужна простая логика, пока оставим как есть
-        serializer.save(user=self.request.user)
+        if not code:
+            return Response({'error': 'Необходимо код подтверждения.'}, status.HTTP_400_BAD_REQUEST)
 
-        # Или можно сделать вот так, если используешь create_appointment():
-        appointment_data = serializer.validated_data
-        create_appointment(
-            user=self.request.user,
-            clinic=appointment_data['clinic'],
-            service=appointment_data.get('service'),
-            doctor=appointment_data.get('doctor'),
-            date=appointment_data['date'],
-            time=appointment_data['time'],
-            notes=appointment_data.get('notes', '')
-        )
+        # Проверяем код из кэша
+        if not code_valid(email, code):
+            return Response({'error': 'Код не валиден или истек.'}, status.HTTP_400_BAD_REQUEST)
 
+        try:
+            # Проверяем запись SMS
+            verification = SMSVerification.objects.get(email=email, code=code, is_used=False)
+            verification.is_used = True
+            verification.save()
+
+            # Проверяем или создаем пользователя
+            user, created = User.objects.get_or_create(email=email)
+
+            cache.delete(f'sms_code_{email}')
+
+            refresh = RefreshToken.for_user(user)
+
+            # Генерация токенов
+            if created:
+                return Response({
+                    'message': 'Успешный вход!, хотите дополнить профиль?',
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }, status.HTTP_201_CREATED)
+
+            return Response({
+                'message': 'Успешный вход!',
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status.HTTP_200_OK)
+
+        except ObjectDoesNotExist:
+            return Response({'error': 'Код не найден или уже использован.'}, status.HTTP_400_BAD_REQUEST)
 
 
