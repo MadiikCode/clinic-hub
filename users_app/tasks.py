@@ -44,8 +44,10 @@ def save_code_in_db(email, code=None):
 def generate_and_save_and_send_code(email):
     code = f"{random.randint(1000, 9999)}"
 
+   # send_code.delay(email, code)
     send_code.delay(email, code)
     cache.set(f'sms_code_{email}', code, timeout=300)
+    #save_code_in_db.delay(email, code)
     save_code_in_db.delay(email, code)
     logger.info(f"Код {code} сгенерирован и отправлен для {email}.")
     return code  # Возвращаем сгенерированный код
