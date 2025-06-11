@@ -42,13 +42,7 @@ INSTALLED_APPS = [
     'doctors_app',
 
     'rest_framework',
-
-
-
-
-
-
-
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -151,13 +145,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication'
     ],
-
-    # connect: drfspectacular-
-    # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-
-    # connect: rest_framework-pagination
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE': 10,  # Количество элементов на одной странице
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # SIMPLE_JWT = {
@@ -221,4 +209,12 @@ CELERY_TASK_ALWAYS_EAGER = True  # True для локального тестир
 CELERY_TASK_EAGER_PROPAGATES = True
 
 
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': ' Документация наших API',
+    'DESCRIPTION': 'Описание документации API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+}
 
