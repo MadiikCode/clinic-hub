@@ -5,12 +5,18 @@ from clinic_app.urls import router as clinic_router
 from  users_app.urls import router as users_router
 from doctors_app.urls import router as doctors_router
 
+<<<<<<< HEAD
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 
 
 
+=======
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
+
+>>>>>>> dc96274e6eb63e1251dbaaa01b4aed5ded0f87ad
 router = routers.DefaultRouter()
 router.registry.extend(clinic_router.registry)
 router .registry.extend(users_router.registry)
@@ -19,12 +25,18 @@ router .registry.extend(doctors_router.registry)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+<<<<<<< HEAD
    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
    #  path('api/', include('users_app.urls')),
    #  path('api/', include('doctors_app.urls')),
  # YOUR PATTERNS
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Optional UI:
+=======
+
+    # swagger
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+>>>>>>> dc96274e6eb63e1251dbaaa01b4aed5ded0f87ad
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
