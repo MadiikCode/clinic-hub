@@ -42,10 +42,7 @@ INSTALLED_APPS = [
     'doctors_app',
 
     'rest_framework',
-
-
-
-
+   'drf_spectacular',
 
 
 
@@ -151,6 +148,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication'
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 
     # connect: drfspectacular-
     # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -221,4 +219,10 @@ CELERY_TASK_ALWAYS_EAGER = True  # True для локального тестир
 CELERY_TASK_EAGER_PROPAGATES = True
 
 
-
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your Project API',
+    'DESCRIPTION': 'Your project description',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+}

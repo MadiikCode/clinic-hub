@@ -5,6 +5,12 @@ from clinic_app.urls import router as clinic_router
 from  users_app.urls import router as users_router
 from doctors_app.urls import router as doctors_router
 
+
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
+
+
+
 router = routers.DefaultRouter()
 router.registry.extend(clinic_router.registry)
 router .registry.extend(users_router.registry)
@@ -16,5 +22,11 @@ urlpatterns = [
    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
    #  path('api/', include('users_app.urls')),
    #  path('api/', include('doctors_app.urls')),
+ # YOUR PATTERNS
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional UI:
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
+
 

@@ -24,7 +24,6 @@ from rest_framework import viewsets
 from .models import Category, Clinic, Schedule, Service
 from .serializers import CategorySerializer, ClinicSerializer, ScheduleSerializer, ServiceSerializer
 
-
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
