@@ -42,14 +42,9 @@ INSTALLED_APPS = [
     'doctors_app',
 
     'rest_framework',
-<<<<<<< HEAD
+
    'drf_spectacular',
 
-
-
-=======
-    'drf_spectacular',
->>>>>>> dc96274e6eb63e1251dbaaa01b4aed5ded0f87ad
 ]
 
 MIDDLEWARE = [
@@ -153,7 +148,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication'
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-<<<<<<< HEAD
 
     # connect: drfspectacular-
     # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -161,8 +155,7 @@ REST_FRAMEWORK = {
     # connect: rest_framework-pagination
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE': 10,  # Количество элементов на одной странице
-=======
->>>>>>> dc96274e6eb63e1251dbaaa01b4aed5ded0f87ad
+
 }
 
 # SIMPLE_JWT = {
@@ -226,21 +219,13 @@ CELERY_TASK_ALWAYS_EAGER = True  # True для локального тестир
 CELERY_TASK_EAGER_PROPAGATES = True
 
 
-<<<<<<< HEAD
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Your Project API',
-    'DESCRIPTION': 'Your project description',
-=======
+
 
 SPECTACULAR_SETTINGS = {
     'TITLE': ' Документация наших API',
     'DESCRIPTION': 'Описание документации API',
->>>>>>> dc96274e6eb63e1251dbaaa01b4aed5ded0f87ad
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> dc96274e6eb63e1251dbaaa01b4aed5ded0f87ad

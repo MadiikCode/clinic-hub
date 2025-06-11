@@ -12,7 +12,48 @@ from rest_framework import status
 from .services.code_limited_service import is_code_limited, set_code_limited
 from .services.validate_code import code_valid
 from .tasks import generate_and_save_and_send_code
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample, OpenApiParameter
 
+
+
+#UserApiView
+@extend_schema_view(
+    list=extend_schema(
+        summary="Получение списка пользователей",
+        description="Получение списка пользователей",
+        responses={200: UserSerializer}
+    ),
+    retrieve=extend_schema(
+        summary="Получение пользователя",
+        description="Получение пользователя",
+        responses={200: UserSerializer}
+    ),
+    create=extend_schema(
+        summary="Создание пользователя",
+        description="Создание пользователя",
+        request=UserSerializer,
+        responses={201: UserSerializer}
+    ),
+    update=extend_schema(
+        summary="Обновление пользователя",
+        description="Обновление пользователя",
+        request=UserSerializer,
+        responses={200: UserSerializer}
+    ),
+    partial_update=extend_schema(
+        summary="Частичное обновление пользователя",
+        description="Частичное обновление пользователя",
+        request=UserSerializer,
+        responses={200: UserSerializer}
+    ),
+    destroy=extend_schema(
+        summary="Удаление пользователя",
+        description="Удаление пользователя",
+        responses={204: None}
+
+    ),
+
+)
 
 class UserApiView(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -35,6 +76,44 @@ class UserApiView(viewsets.ModelViewSet):
 
         return Response({'message': 'Код отправлен.'}, status=status.HTTP_201_CREATED)
 
+
+
+#SMSVerificationApiView
+@extend_schema_view(
+    list=extend_schema(
+        summary="Получение списка SMS",
+        description="Получение списка SMS",
+        responses={200: SMSVerificationSerializer}
+    ),
+    retrieve=extend_schema(
+        summary="Получение SMS",
+        description="Получение SMS",
+        responses={200: SMSVerificationSerializer}
+    ),
+    create=extend_schema(
+        summary="Создание SMS",
+        description="Создание SMS",
+        request=SMSVerificationSerializer,
+        responses={201: SMSVerificationSerializer}
+    ),
+    update=extend_schema(
+        summary="Обновление SMS",
+        description="Обновление SMS",
+        request=SMSVerificationSerializer,
+        responses={200: SMSVerificationSerializer}
+    ),
+    partial_update=extend_schema(
+        summary="Частичное обновление SMS",
+        description="Частичное обновление SMS",
+        request=SMSVerificationSerializer,
+        responses={200: SMSVerificationSerializer}
+    ),
+    destroy=extend_schema(
+        summary="Удаление SMS",
+        description="Удаление SMS",
+        responses={204: None}
+    )
+)
 
 class SMSVerificationApiView(viewsets.ModelViewSet):
     queryset = SMSVerification.objects.all()
