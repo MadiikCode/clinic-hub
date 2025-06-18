@@ -1,5 +1,5 @@
 # Используем стабильный Python-образ
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 # Отключаем буферизацию вывода
 ENV PYTHONUNBUFFERED=1
@@ -25,5 +25,10 @@ COPY . .
 # Открываем порт
 EXPOSE 8000
 
-# Запуск сервера
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Копируем и даём права на скрипт запуска
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Указываем команду по умолчанию
+CMD ["/app/entrypoint.sh"]
+
